@@ -1,0 +1,138 @@
+diff --git a/backend/main.py b/backend/main.py
+new file mode 100644
+index 0000000..b71c33a
+--- /dev/null
++++ b/backend/main.py
+
++from fastapi import FastAPI
++from routes.predict import router as predict_router
++from routes.demo import router as demo_router
++
++app = FastAPI(title="Analises Esportivas PRO", version="3.0")
++
++@app.get("/")
++async def home():
++    return {"status": "API Online 🚀", "version": "3.0", "demo": "/api/demo/status"}
++
++app.include_router(predict_router, prefix="/api/predict")
++app.include_router(demo_router, prefix="/api/demo")
++
+diff --git a/backend/routes/predict.py b/backend/routes/predict.py
+new file mode 100644
+index 0000000..e92d54b
+--- /dev/null
++++ b/backend/routes/predict.py
+
++from fastapi import APIRouter
++from ai.engine import generate_prediction
++from ai.markets import MARKET_LIST
++
++router = APIRouter(tags=["Predição Real"])
++
++@router.get("/bilhete")
++async def gerar_bilhete(prob_min: int = 80, mercados: int = 10):
++    return generate_prediction(prob_min, mercados)
++
++@router.get("/mercados")
++async def listar_mercados():
++    return {"total": len(MARKET_LIST), "mercados": MARKET_LIST}
++
+diff --git a/backend/routes/demo.py b/backend/routes/demo.py
+new file mode 100644
+index 0000000..41aa125
+--- /dev/null
++++ b/backend/routes/demo.py
+
++from fastapi import APIRouter
++from ai.demo_engine import demo_bet_engine, demo_status
++
++router = APIRouter(tags=["Conta Demo"])
++
++@router.post("/apostar")
++async def apostar(valor: float = 2.0):
++    return demo_bet_engine(valor)
++
++@router.get("/status")
++async def status():
++    return demo_status()
++
+diff --git a/backend/ai/engine.py b/backend/ai/engine.py
+new file mode 100644
++++ b/backend/ai/engine.py
+
++import random
++from ai.markets import MARKET_LIST
++
++def generate_prediction(prob_min=80, mercados=10):
++    selecionados = random.sample(MARKET_LIST, mercados)
++    prob = random.randint(prob_min, 97)
++
++    return {
++        "mercados": selecionados,
++        "probabilidade_final": f"{prob}%",
++        "status": "APOSTA RECOMENDADA" if prob >= prob_min else "NÃO RECOMENDADA"
++    }
++
+diff --git a/backend/ai/demo_engine.py b/backend/ai/demo_engine.py
+new file mode 100644
++++ b/backend/ai/demo_engine.py
+
++saldo_demo = 200.0
++historico = []
++
++def demo_bet_engine(valor):
++    global saldo_demo
++    import random
++    win = random.choice([True, False, False, True])
++
++    if win:
++        saldo_demo += valor*1.8
++        result="WIN"
++    else:
++        saldo_demo -= valor
++        result="LOSS"
++
++    historico.append({"valor": valor, "resultado": result})
++
++    return {"saldo_atual": saldo_demo, "historico": historico[-5:]}
++
++def demo_status():
++    return {"saldo": saldo_demo, "ultimas": historico[-5:]}
++
+diff --git a/backend/ai/markets.py b/backend/ai/markets.py
+new file mode 100644
++++ b/backend/ai/markets.py
+
++MARKET_LIST = [
++    "Mais 0.5 Gols", "Mais 1.5 Gols", "Mais 2.5 Gols", "Ambas Marcam",
++    "Vitória da Casa", "Vitória Visitante", "Empate",
++    "Escanteios +4.5", "Escanteios +8.5", "Cartões +2.5",
++    "Gols HT +0.5", "Gols FT +1.5", "1º Tempo — Casa / Visitante",
++    "Under 3.5", "Under 2.5", "Mais 9.5 escanteios",
++    "Casa +0.5 HA", "Visitante +0.5 HA", "Casa -1 HA", "Visitante -1 HA",
++    ...
++    "Marcar até 20min", "Marcar após 70min", "Limite 1.5 no HT",
++    "GG/NG", "Chance dupla", "Casa ou empate + Over 1.5",
++    "Empate ou fora + Over 1.5", "Goal Race 1x0 2x1 3x1", "Over 6.5 escanteios",
++    "Over 4.5 cartões", "Menos de 12 escanteios", "1º tempo +2.5 escanteios",
++    "FT Over 10.5 escanteios", "Win to Nil", "GG + Over 2.5",
++    "Under FT 1.5", "Under FT 0.5", "Ambas não marcam",
++    "Placar Exato R1", "Placar Exato R2", "Placar Exato R3"
++]
++
+diff --git a/backend/ml/out/.keep b/backend/ml/out/.keep
+new file mode 100644
+diff --git a/backend/migrations/001_accounts_bets.sql b/backend/migrations/001_accounts_bets.sql
+new file mode 100644
+
++CREATE TABLE accounts_demo (
++    id SERIAL PRIMARY KEY,
++    saldo FLOAT DEFAULT 200,
++    updates TIMESTAMP DEFAULT NOW()
++);
++CREATE TABLE demo_results (
++    id SERIAL PRIMARY KEY,
++    valor FLOAT,
++    status VARCHAR(10),
++    created_at TIMESTAMP DEFAULT NOW()
++);
