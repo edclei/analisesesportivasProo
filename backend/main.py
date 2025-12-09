@@ -3,6 +3,9 @@ from pydantic import BaseModel
 import os, json
 from services.accounts import create_account, get_account
 from backend.services.demo_engine import place_demo_bet
+import sys
+sys.path.append(".")
+from services.demo_engine import place_demo_bet
 from dotenv import load_dotenv
 from fastapi import FastAPI
 
