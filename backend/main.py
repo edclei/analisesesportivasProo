@@ -5,7 +5,7 @@ from services.accounts import create_account, get_account
 
 import sys, os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-from services.demo_engine import place_demo_bet   # Certifique-se se está igual ao nome da função
+from services.demo_engine import place_demo_bet()  # Certifique-se se está igual ao nome da função
 from dotenv import load_dotenv
 from fastapi import FastAPI
 
