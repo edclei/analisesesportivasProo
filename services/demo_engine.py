@@ -1,8 +1,7 @@
-def place_demo_bet(match_id, stake, strategy="default"):
-    # Exemplo mínimo funcional para o deploy não quebrar
+def place_demo_bet(match_id: str, stake: float, markets: list = None):
     return {
-        "status": "simulated",
+        "status": "demo-bet-placed",
         "match_id": match_id,
         "stake": stake,
-        "strategy": strategy
+        "markets_used": markets or []
     }
