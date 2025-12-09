@@ -1,6 +1,8 @@
-# shim
-# TROCAR
-from services.demo_engine import place_demo_bet
-
-# PARA O NOME QUE EXISTE NO ARQUIVO
-from services.demo_engine import nome_correto_da_funcao
+def place_demo_bet(match_id, stake, strategy="default"):
+    # Exemplo mínimo funcional para o deploy não quebrar
+    return {
+        "status": "simulated",
+        "match_id": match_id,
+        "stake": stake,
+        "strategy": strategy
+    }
