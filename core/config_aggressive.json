@@ -1,0 +1,12 @@
+{
+  "ai_mode": "AGGRESSIVE_OMEGA",
+  "ai_mode_id": 3,
+  "confidence_threshold": 0.8,
+  "live_poll_seconds": 15,
+  "max_teams_per_ticket": 10,
+  "markets_per_team_default": 3,
+  "stake_strategy": "HYBRID_KELLY_CONFIDENCE_AGGRESSIVE",
+  "max_multis_per_day": 4,
+  "max_singles_per_day": 4,
+  "demo_auto_place": true
+}

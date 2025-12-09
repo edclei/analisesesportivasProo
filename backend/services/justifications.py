@@ -1,5 +1,5 @@
 import json
-from services.db import cursor
+from .db import cursor
 
 def save_justification(betslip_id, summary_obj):
     cur = cursor()

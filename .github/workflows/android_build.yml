@@ -1,0 +1,52 @@
+
+name: Android APK Build (Capacitor)
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build-android:
+    name: Build Android APK
+    runs-on: ubuntu-latest
+    env:
+      NODE_VERSION: '18'
+      JAVA_VERSION: '11'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: ${{ env.JAVA_VERSION }}
+      - name: Install Android SDK (cmdline-tools)
+        uses: android-actions/setup-android@v2
+        with:
+          api-level: 33
+          build-tools: 33.0.0
+          components: platform-tools,ndk;21.4.7075529
+      - name: Install dependencies
+        run: |
+          npm ci --prefix frontend || npm install --prefix frontend
+          npm ci --prefix mobile || npm install --prefix mobile
+      - name: Build web (frontend)
+        run: |
+          npm --prefix frontend run build
+      - name: Prepare Capacitor and sync
+        run: |
+          npm --prefix mobile run prepare:web
+          npx cap sync android --web-dir=frontend/dist
+      - name: Build Android release APK
+        run: |
+          cd mobile/android
+          ./gradlew assembleRelease --no-daemon
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-release-apk
+          path: mobile/android/app/build/outputs/apk/release/*.apk

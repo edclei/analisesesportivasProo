@@ -1,4 +1,4 @@
-from services.db import cursor
+from .db import cursor
 
 def create_account(user_id, name, acc_type='demo', initial_balance=1000.0):
     cur = cursor()

@@ -1,0 +1,15 @@
+{
+  "name": "analises-esportivas-mobile",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build:web": "cd ../frontend && npm install && npm run build",
+    "prepare:web": "npm run build:web && rm -rf www && mkdir www && cp -r ../frontend/dist/* www/ || true",
+    "cap:init": "npx @capacitor/cli create analises-esportivas com.example.analises --web-dir=www",
+    "cap:add:android": "npx cap add android || true",
+    "cap:sync": "npx cap sync",
+    "cap:open:android": "npx cap open android",
+    "build:apk": "npm run prepare:web && npx cap sync android && cd android && ./gradlew assembleRelease"
+  },
+  "dependencies": {}
+}

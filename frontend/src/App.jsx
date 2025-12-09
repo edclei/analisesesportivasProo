@@ -1,3 +1,4 @@
+import BetBuilderV2 from './pages/BetBuilderV2';\nimport DemoDashboard from './pages/DemoDashboard';
 import React, {useState, useEffect} from 'react';
 import Dashboard from './components/Dashboard';
 import MultiBuilder from './components/MultiBuilder';
@@ -37,3 +38,29 @@ export default function App(){
     </div>
   );
 }
+
+
+
+
+// Demo route added by assistant
+// Add a simple navigation link to Demo
+export function DemoLink(){
+  return (<div style={{position:'fixed', right:20, top:20}}>
+    <a href="#demo" onClick={(e)=>{e.preventDefault(); window.location.hash='demo'; window.location.reload();}}>Demo</a>
+  </div>);
+}
+
+// If hash is #demo, render DemoDashboard
+if(typeof window !== 'undefined' && window.location && window.location.hash === '#demo'){
+  const root = document.getElementById('root') || document.querySelector('.root') || document.body;
+  import('./pages/DemoDashboard').then(m=>{
+    const Comp = m.default;
+    const el = document.createElement('div');
+    root.prepend(el);
+    // basic render
+    import('react-dom').then(rd=>{
+      rd.render(rd.createElement(Comp), el);
+    });
+  });
+}
+\n\n// Quick access: append #betbuilder to open this page\nif(typeof window !== 'undefined' && window.location && window.location.hash === '#betbuilder'){\n  const root = document.getElementById('root') || document.body;\n  import('./pages/BetBuilderV2').then(m=>{ const Comp = m.default; import('react-dom').then(rd=>{ rd.render(rd.createElement(Comp), root); }); });\n}\n
