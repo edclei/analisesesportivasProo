@@ -2,7 +2,7 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 import os, json
 from services.accounts import create_account, get_account
-from services.demo_engine import place_demo_bet
+from services.demo_engine import place_demo_bet()
 from dotenv import load_dotenv
 from fastapi import FastAPI
 
