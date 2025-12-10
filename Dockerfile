@@ -1,22 +1,13 @@
-# ============================
-#  AnalisesEsportivasPro — Backend
-#  Deploy Railway / FastAPI / Python
-# ============================
+FROM python:3.11-slim
 
-FROM python:3.11
-
-# Pasta de trabalho no container
 WORKDIR /app
 
-# Instala dependências
-COPY backend/requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+COPY . /app/
 
-# Copia todo conteúdo do backend
-COPY backend .
+RUN pip install --no-cache-dir -r backend/requirements.txt
 
-# Porta exposta pro Railway
-EXPOSE 8000
+ENV PORT=8080
 
-# Inicializa servidor FastAPI
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+EXPOSE 8080
+
+CMD uvicorn main:app --host 0.0.0.0 --port 8080 --reload
