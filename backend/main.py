@@ -111,3 +111,4 @@ try:
 except:
     print("⚠ live router nao encontrado")
 
+
