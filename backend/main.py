@@ -1,22 +1,21 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
-import os, sys
+import sys, os
 from dotenv import load_dotenv
 
-# garante path correto
+# Adiciona o diretório raiz no path
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-# IMPORTAÇÃO CORRETA
+# IMPORTAÇÃO CORRETA (SEM ())
 from services.demo_engine import place_demo_bet
 from services.accounts import create_account, get_account
 
-app = FastAPI(title="Sports Analyzer API")
-
 load_dotenv()
+app = FastAPI(title="Sports Analyzer API")
 
 @app.get("/api/health")
 def health():
-    return {"status": "ok", "service": "sports-analyzer"}
+    return {"status":"online","service":"SportsAnalyzer"}
 
 class CreateAccountPayload(BaseModel):
     user_id: str
@@ -25,9 +24,12 @@ class CreateAccountPayload(BaseModel):
 
 @app.post("/api/account/create")
 def api_create_account(payload: CreateAccountPayload):
-    if payload.account_type not in ('demo','real'):
-        raise HTTPException(status_code=400, detail="invalid type")
-    acc = create_account(payload.user_id, f"{payload.account_type}_account", payload.account_type, payload.initial_balance)
+    if payload.account_type not in ("demo","real"):
+        raise HTTPException(status_code=400, detail="type invalid")
+    acc = create_account(payload.user_id,
+                         f"{payload.account_type}_account",
+                         payload.account_type,
+                         payload.initial_balance)
     return {"status":"ok","account":acc}
 
 class BetRequest(BaseModel):
@@ -35,7 +37,7 @@ class BetRequest(BaseModel):
     selections: list
     combined_odd: float
     prob: float
-    market_type: str = 'multiple'
+    market_type: str = "multiple"
     justification: dict = {}
 
 @app.post("/api/bet/place_demo")
@@ -48,13 +50,4 @@ def api_place_demo(req: BetRequest):
         "justification": req.justification
     })
     return result
-
-# Rotas adicionais
-try:
-    from backend.routes import predict_demo, betbuilder
-    app.include_router(predict_demo.router)
-    app.include_router(betbuilder.router)
-except:
-    print("Routes não carregadas — verificar paths")
-
 
