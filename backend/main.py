@@ -1,28 +1,22 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
+import os, sys
 from dotenv import load_dotenv
-import os, json, sys
 
-# PATH FIX
+# garante path correto
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-# IMPORTAÇÃO CORRETA (SEM PARENTESES)
+# IMPORTAÇÃO CORRETA
 from services.demo_engine import place_demo_bet
-from services.contas import create_account, get_account
+from services.accounts import create_account, get_account
+
+app = FastAPI(title="Sports Analyzer API")
 
 load_dotenv()
 
-app = FastAPI(title="Analises Esportivas PRO API")
-
-
-# ---------------- HEALTH ----------------
 @app.get("/api/health")
 def health():
-    return {"status": "online", "service": "AnalisesEsportivasPro", "demo_engine": "ACTIVE"}
-
-
-
-# ---------------- CONTA ----------------
+    return {"status": "ok", "service": "sports-analyzer"}
 
 class CreateAccountPayload(BaseModel):
     user_id: str
@@ -33,18 +27,8 @@ class CreateAccountPayload(BaseModel):
 def api_create_account(payload: CreateAccountPayload):
     if payload.account_type not in ('demo','real'):
         raise HTTPException(status_code=400, detail="invalid type")
-
-    acc = create_account(
-        payload.user_id,
-        f"{payload.account_type}_account",
-        payload.account_type,
-        payload.initial_balance
-    )
-    return {"status": "ok", "account": acc}
-
-
-
-# ---------------- APOSTA DEMO ----------------
+    acc = create_account(payload.user_id, f"{payload.account_type}_account", payload.account_type, payload.initial_balance)
+    return {"status":"ok","account":acc}
 
 class BetRequest(BaseModel):
     account_id: str
@@ -56,35 +40,21 @@ class BetRequest(BaseModel):
 
 @app.post("/api/bet/place_demo")
 def api_place_demo(req: BetRequest):
-    if not 0 <= req.prob <= 1:
-        raise HTTPException(status_code=400, detail="prob invalid")
-
-    result = place_demo_bet(
-        req.account_id,
-        {
-            "selections": req.selections,
-            "combined_odd": req.combined_odd,
-            "prob": req.prob,
-            "market_type": req.market_type,
-            "justification": req.justification
-        }
-    )
+    result = place_demo_bet(req.account_id, {
+        "selections": req.selections,
+        "combined_odd": req.combined_odd,
+        "prob": req.prob,
+        "market_type": req.market_type,
+        "justification": req.justification
+    })
     return result
 
+# Rotas adicionais
+try:
+    from backend.routes import predict_demo, betbuilder
+    app.include_router(predict_demo.router)
+    app.include_router(betbuilder.router)
+except:
+    print("Routes não carregadas — verificar paths")
 
-
-# ROTAS EXTRAS (só carrega se existir)
-def try_include(path, name):
-    try:
-        module = __import__(path, fromlist=[name])
-        app.include_router(getattr(module, name).router)
-        print(f"🔗 Router carregado: {name}")
-    except:
-        print(f"⚠ Router ignorado: {name}")
-
-try_include("backend.routes.predict_demo", "predict_demo")
-try_include("backend.routes.betbuilder", "betbuilder")
-try_include("backend.routes.live", "live_router")
-
-print("🚀 API carregada com sucesso")
 
