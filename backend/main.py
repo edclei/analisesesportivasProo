@@ -8,7 +8,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 # IMPORTAÇÃO CORRETA (SEM PARENTESES)
 from services.demo_engine import place_demo_bet
-from services.accounts import create_account, get_account
+from services.contas import create_account, get_account
 
 load_dotenv()
 
