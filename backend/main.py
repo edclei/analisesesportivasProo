@@ -3,6 +3,8 @@
 # ============================
 import sys, os
 from fastapi import FastAPI, HTTPException
+from backend.main import app  # certifica source único p/ uvicorn
+
 from pydantic import BaseModel
 from dotenv import load_dotenv
 
