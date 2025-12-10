@@ -3,10 +3,10 @@ from pydantic import BaseModel
 from dotenv import load_dotenv
 import os, json, sys
 
-# Garantir que serviço backend seja enxergado
+# PATH FIX
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-#  IMPORTAÇÃO CORRETA
+# IMPORTAÇÃO CORRETA (SEM PARENTESES)
 from services.demo_engine import place_demo_bet
 from services.accounts import create_account, get_account
 
@@ -15,15 +15,14 @@ load_dotenv()
 app = FastAPI(title="Analises Esportivas PRO API")
 
 
-# ---------------- HEALTHCHECK ----------------
-
+# ---------------- HEALTH ----------------
 @app.get("/api/health")
 def health():
     return {"status": "online", "service": "AnalisesEsportivasPro", "demo_engine": "ACTIVE"}
 
 
 
-# ---------------- CRIAÇÃO DE CONTA ----------------
+# ---------------- CONTA ----------------
 
 class CreateAccountPayload(BaseModel):
     user_id: str
@@ -41,9 +40,7 @@ def api_create_account(payload: CreateAccountPayload):
         payload.account_type,
         payload.initial_balance
     )
-
     return {"status": "ok", "account": acc}
-
 
 
 
@@ -59,7 +56,7 @@ class BetRequest(BaseModel):
 
 @app.post("/api/bet/place_demo")
 def api_place_demo(req: BetRequest):
-    if req.prob < 0 or req.prob > 1:
+    if not 0 <= req.prob <= 1:
         raise HTTPException(status_code=400, detail="prob invalid")
 
     result = place_demo_bet(
@@ -76,39 +73,18 @@ def api_place_demo(req: BetRequest):
 
 
 
-# ---------------- ROTAS EXTRAS (CARREGAMENTO SEGURO) ----------------
+# ROTAS EXTRAS (só carrega se existir)
+def try_include(path, name):
+    try:
+        module = __import__(path, fromlist=[name])
+        app.include_router(getattr(module, name).router)
+        print(f"🔗 Router carregado: {name}")
+    except:
+        print(f"⚠ Router ignorado: {name}")
 
-# Demo predictions
-try:
-    from backend.routes import predict_demo
-    app.include_router(predict_demo.router)
-except:
-    print("⚠ predict_demo router nao encontrado")
+try_include("backend.routes.predict_demo", "predict_demo")
+try_include("backend.routes.betbuilder", "betbuilder")
+try_include("backend.routes.live", "live_router")
 
-# Betbuilder dynamic bets
-try:
-    from backend.routes import betbuilder
-    app.include_router(betbuilder.router)
-except:
-    print("⚠ betbuilder router nao encontrado")
-
-# Demo jobs automáticos
-try:
-    import backend.demo.jobs
-except Exception as e:
-    print("⚠ demo jobs nao carregado:", e)
-
-# Live Watchdog
-try:
-    import backend.live.live_watchdog
-except Exception as e:
-    print("⚠ live watchdog nao carregado:", e)
-
-# Live routes
-try:
-    from backend.routes import live as live_router
-    app.include_router(live_router.router)
-except:
-    print("⚠ live router nao encontrado")
-
+print("🚀 API carregada com sucesso")
 
